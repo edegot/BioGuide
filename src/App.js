@@ -1,0 +1,2760 @@
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import {
+  Search,
+  MapPin,
+  Camera,
+  Download,
+  Upload,
+  Settings,
+  List,
+  X,
+  Leaf,
+  Database,
+  Save,
+  Loader,
+  ExternalLink,
+  Trash2,
+  AlertTriangle,
+  PieChart,
+  Filter,
+  Globe,
+  Trophy,
+  Plus,
+  Edit2,
+  ChevronDown,
+  Sparkles,
+  CheckCircle,
+  Lock,
+  ArrowLeft,
+  Layers,
+  Info,
+  Languages,
+  LayoutGrid,
+  Menu,
+  RefreshCw,
+} from "lucide-react";
+
+// --- 1. DATA & CONFIGURATION ---
+
+// TRANSLATIONS object holds translations for different languages
+const TRANSLATIONS = {
+  en: {
+    explore: "Explore",
+    myList: "My List",
+    stats: "Stats",
+    settings: "Settings",
+    searchPlaceholder: "Search global database...",
+    myObservations: "My Observations",
+    searchList: "Search name, family...",
+    noMatch: "No matching species found.",
+    discover: "Discover Nature",
+    loadingFeatured: "Loading species of the moment...",
+    startTyping: "Start typing above to search for specific species.",
+    results: "Results",
+    noResults: "No species found with global observations.",
+    emptyList: "Empty List",
+    emptyListMsg:
+      "Search for species you've observed to start your collection.",
+    findSpecies: "Find Species",
+    observedSpecies: "Observed Species",
+    taxonomicGroups: "Taxonomic Groups",
+    completedGenera: "Completed Genera",
+    allObserved: "All species observed",
+    iconicGroups: "Iconic Groups",
+    globalCompletion: "Global Completion",
+    globalSubtitle: "Your collection vs. estimated known species",
+    dataBackup: "Data Backup",
+    exportCSV: "Export CSV",
+    importCSV: "Import CSV",
+    dangerZone: "Danger Zone",
+    clearAll: "Clear All Data",
+    language: "Language",
+    langSubtitle: "Interface and common names will appear in this language.",
+    addCollection: "Add to Collection",
+    updateObs: "Update Observation",
+    where: "Where? (Countries)",
+    notes: "Field Notes",
+    save: "Save Observation",
+    update: "Update Entry",
+    removeTitle: "Remove Species?",
+    removeMsg: "Are you sure you want to remove",
+    cancel: "Cancel",
+    yesRemove: "Yes, Remove",
+    resetTitle: "Reset Collection",
+    protectedAction: "Protected Action",
+    resetMsg: "To permanently delete",
+    observations: "observations",
+    typeDelete: "Type DELETE",
+    deleteEverything: "Delete Everything",
+    added: "Added",
+    updated: "Updated",
+    toList: "to your list!",
+    fetchingTaxonomy: "Processing Taxonomy...",
+    calculating: "Calculating Genus Totals...",
+    breakdown: "My Breakdown",
+    globalContext: "Global Context",
+    noCountry: "No countries added",
+    translating: "Updating collection names...",
+    translationComplete: "Collection language updated",
+    trophies: "Trophies",
+  },
+  fr: {
+    explore: "Explorer",
+    myList: "Ma Liste",
+    stats: "Stats",
+    settings: "Réglages",
+    searchPlaceholder: "Rechercher dans la base...",
+    myObservations: "Mes Observations",
+    searchList: "Chercher nom, famille...",
+    noMatch: "Aucune espèce correspondante.",
+    discover: "Découvrir la Nature",
+    loadingFeatured: "Chargement de l'espèce du moment...",
+    startTyping: "Tapez ci-dessus pour chercher une espèce.",
+    results: "Résultats",
+    noResults: "Aucune espèce trouvée.",
+    emptyList: "Liste Vide",
+    emptyListMsg:
+      "Recherchez des espèces observées pour débuter votre collection.",
+    findSpecies: "Trouver des Espèces",
+    observedSpecies: "Espèces Observées",
+    taxonomicGroups: "Groupes Taxonomiques",
+    completedGenera: "Genres Complétés",
+    allObserved: "Toutes espèces observées",
+    iconicGroups: "Groupes Iconiques",
+    globalCompletion: "Complétion Globale",
+    globalSubtitle: "Votre collection vs. estimations mondiales",
+    dataBackup: "Sauvegarde",
+    exportCSV: "Exporter CSV",
+    importCSV: "Importer CSV",
+    dangerZone: "Zone de Danger",
+    clearAll: "Tout Effacer",
+    language: "Langue",
+    langSubtitle:
+      "L'interface et les noms communs apparaîtront dans cette langue.",
+    addCollection: "Ajouter à la Collection",
+    updateObs: "Modifier l'Observation",
+    where: "Où ? (Pays)",
+    notes: "Notes de Terrain",
+    save: "Sauvegarder",
+    update: "Mettre à jour",
+    removeTitle: "Supprimer l'espèce ?",
+    removeMsg: "Êtes-vous sûr de vouloir supprimer",
+    cancel: "Annuler",
+    yesRemove: "Oui, Supprimer",
+    resetTitle: "Réinitialiser",
+    protectedAction: "Action Protégée",
+    resetMsg: "Pour supprimer définitivement",
+    observations: "observaciones",
+    typeDelete: "Tapez DELETE",
+    deleteEverything: "Tout Supprimer",
+    added: "Ajouté",
+    updated: "Mis à jour",
+    toList: "à votre liste !",
+    fetchingTaxonomy: "Analyse de la Taxonomie...",
+    calculating: "Calcul des totaux...",
+    breakdown: "Mon Analyse",
+    globalContext: "Contexte Global",
+    noCountry: "Aucun pays ajouté",
+    translating: "Mise à jour des noms...",
+    translationComplete: "Langue de la collection mise à jour",
+    trophies: "Trophées",
+  },
+  es: {
+    explore: "Explorar",
+    myList: "Mi Lista",
+    stats: "Estadísticas",
+    settings: "Ajustes",
+    searchPlaceholder: "Buscar en la base de datos...",
+    myObservations: "Mis Observaciones",
+    searchList: "Buscar nombre, familia...",
+    noMatch: "No se encontraron especies.",
+    discover: "Descubrir la Naturaleza",
+    loadingFeatured: "Cargando especie del momento...",
+    startTyping: "Escribe arriba para buscar especies.",
+    results: "Resultados",
+    noResults: "No se encontraron especies.",
+    emptyList: "Lista Vacía",
+    emptyListMsg: "Busca especies observadas para empezar tu colección.",
+    findSpecies: "Buscar Especies",
+    observedSpecies: "Especies Observadas",
+    taxonomicGroups: "Grupos Taxonómicos",
+    completedGenera: "Géneros Completados",
+    allObserved: "Todas las especies observadas",
+    iconicGroups: "Grupos Icónicos",
+    globalCompletion: "Finalización Global",
+    globalSubtitle: "Tu colección vs. estimaciones globales",
+    dataBackup: "Copia de Seguridad",
+    exportCSV: "Exportar CSV",
+    importCSV: "Importar CSV",
+    dangerZone: "Zona de Peligro",
+    clearAll: "Borrar Todo",
+    language: "Idioma",
+    langSubtitle:
+      "La interfaz y los nombres comunes aparecerán en este idioma.",
+    addCollection: "Añadir a la Colección",
+    updateObs: "Actualizar Observación",
+    where: "¿Dónde? (Países)",
+    notes: "Notas de Campo",
+    save: "Guardar",
+    update: "Actualizar",
+    removeTitle: "¿Eliminar Especie?",
+    removeMsg: "¿Seguro que quieres eliminar",
+    cancel: "Cancelar",
+    yesRemove: "Sí, Eliminar",
+    resetTitle: "Reiniciar Colección",
+    protectedAction: "Acción Protegida",
+    resetMsg: "Para eliminar permanentemente",
+    observations: "observaciones",
+    typeDelete: "Escribe DELETE",
+    deleteEverything: "Borrar Todo",
+    added: "Añadido",
+    updated: "Actualizado",
+    toList: "a tu lista!",
+    fetchingTaxonomy: "Procesando Taxonomía...",
+    calculating: "Calculando Totales...",
+    breakdown: "Mi Desglose",
+    globalContext: "Contexto Global",
+    noCountry: "Ningún país añadido",
+    translating: "Actualizando nombres...",
+    translationComplete: "Idioma de la colección actualizado",
+    trophies: "Trofeos",
+  },
+  de: {
+    explore: "Entdecken",
+    myList: "Meine Liste",
+    stats: "Statistik",
+    settings: "Einstellungen",
+    searchPlaceholder: "Datenbank durchsuchen...",
+    myObservations: "Meine Beobachtungen",
+    searchList: "Suche Name, Familie...",
+    noMatch: "Keine passenden Arten gefunden.",
+    discover: "Natur Entdecken",
+    loadingFeatured: "Lade Art des Moments...",
+    startTyping: "Tippen Sie oben, um zu suchen.",
+    results: "Ergebnisse",
+    noResults: "Keine Arten gefunden.",
+    emptyList: "Leere Liste",
+    emptyListMsg: "Suchen Sie nach Arten, um Ihre Sammlung zu starten.",
+    findSpecies: "Arten Finden",
+    observedSpecies: "Beobachtete Arten",
+    taxonomicGroups: "Taxonomische Gruppen",
+    completedGenera: "Vollständige Gattungen",
+    allObserved: "Alle Arten beobachtet",
+    iconicGroups: "Ikonische Gruppen",
+    globalCompletion: "Globaler Abschluss",
+    globalSubtitle: "Ihre Sammlung vs. globale Schätzungen",
+    dataBackup: "Datensicherung",
+    exportCSV: "CSV Exportieren",
+    importCSV: "CSV Importieren",
+    dangerZone: "Gefahrenzone",
+    clearAll: "Alles Löschen",
+    language: "Sprache",
+    langSubtitle:
+      "Schnittstelle und Trivialnamen erscheinen in dieser Sprache.",
+    addCollection: "Zur Sammlung hinzufügen",
+    updateObs: "Beobachtung aktualisieren",
+    where: "Wo? (Länder)",
+    notes: "Feldnotizen",
+    save: "Speichern",
+    update: "Aktualisieren",
+    removeTitle: "Art entfernen?",
+    removeMsg: "Möchten Sie wirklich entfernen",
+    cancel: "Abbrechen",
+    yesRemove: "Ja, Entfernen",
+    resetTitle: "Sammlung zurücksetzen",
+    protectedAction: "Geschützte Aktion",
+    resetMsg: "Um dauerhaft zu löschen",
+    observations: "beobachtungen",
+    typeDelete: "Tippen Sie DELETE",
+    deleteEverything: "Alles Löschen",
+    added: "Hinzugefügt",
+    updated: "Aktualisiert",
+    toList: "zu Ihrer Liste!",
+    fetchingTaxonomy: "Verarbeite Taxonomie...",
+    calculating: "Berechne Summen...",
+    breakdown: "Meine Analyse",
+    globalContext: "Globaler Kontext",
+    noCountry: "Keine Länder hinzugefügt",
+    translating: "Namen aktualisieren...",
+    translationComplete: "Sammlungssprache aktualisiert",
+    trophies: "Trophäen",
+  },
+};
+
+// COUNTRIES array lists all countries for selection
+const COUNTRIES = [
+  "Afghanistan",
+  "Albania",
+  "Algeria",
+  "Andorra",
+  "Angola",
+  "Argentina",
+  "Armenia",
+  "Australia",
+  "Austria",
+  "Azerbaijan",
+  "Bahamas",
+  "Bahrain",
+  "Bangladesh",
+  "Barbados",
+  "Belarus",
+  "Belgium",
+  "Belize",
+  "Benin",
+  "Bhutan",
+  "Bolivia",
+  "Bosnia and Herzegovina",
+  "Botswana",
+  "Brazil",
+  "Brunei",
+  "Bulgaria",
+  "Burkina Faso",
+  "Burundi",
+  "Cabo Verde",
+  "Cambodia",
+  "Cameroon",
+  "Canada",
+  "Central African Republic",
+  "Chad",
+  "Chile",
+  "China",
+  "Colombia",
+  "Comoros",
+  "Congo",
+  "Costa Rica",
+  "Croatia",
+  "Cuba",
+  "Cyprus",
+  "Czech Republic",
+  "Denmark",
+  "Djibouti",
+  "Dominica",
+  "Dominican Republic",
+  "Ecuador",
+  "Egypt",
+  "El Salvador",
+  "Equatorial Guinea",
+  "Eritrea",
+  "Estonia",
+  "Eswatini",
+  "Ethiopia",
+  "Fiji",
+  "Finland",
+  "France",
+  "Gabon",
+  "Gambia",
+  "Georgia",
+  "Germany",
+  "Ghana",
+  "Greece",
+  "Grenada",
+  "Guatemala",
+  "Guinea",
+  "Guyana",
+  "Haiti",
+  "Honduras",
+  "Hungary",
+  "Iceland",
+  "India",
+  "Indonesia",
+  "Iran",
+  "Iraq",
+  "Ireland",
+  "Israel",
+  "Italy",
+  "Ivory Coast",
+  "Jamaica",
+  "Japan",
+  "Jordan",
+  "Kazakhstan",
+  "Kenya",
+  "Kiribati",
+  "Kuwait",
+  "Kyrgyzstan",
+  "Laos",
+  "Latvia",
+  "Lebanon",
+  "Lesotho",
+  "Liberia",
+  "Libya",
+  "Liechtenstein",
+  "Lithuania",
+  "Luxembourg",
+  "Madagascar",
+  "Malawi",
+  "Malaysia",
+  "Maldives",
+  "Mali",
+  "Malta",
+  "Marshall Islands",
+  "Mauritania",
+  "Mauritius",
+  "Mexico",
+  "Micronesia",
+  "Moldova",
+  "Monaco",
+  "Mongolia",
+  "Montenegro",
+  "Morocco",
+  "Mozambique",
+  "Myanmar",
+  "Namibia",
+  "Nauru",
+  "Nepal",
+  "Netherlands",
+  "New Zealand",
+  "Nicaragua",
+  "Niger",
+  "Nigeria",
+  "North Korea",
+  "North Macedonia",
+  "Norway",
+  "Oman",
+  "Pakistan",
+  "Palau",
+  "Panama",
+  "Papua New Guinea",
+  "Paraguay",
+  "Peru",
+  "Philippines",
+  "Poland",
+  "Portugal",
+  "Qatar",
+  "Romania",
+  "Russia",
+  "Rwanda",
+  "Saint Kitts and Nevis",
+  "Saint Lucia",
+  "Samoa",
+  "San Marino",
+  "Saudi Arabia",
+  "Senegal",
+  "Serbia",
+  "Seychelles",
+  "Sierra Leone",
+  "Singapore",
+  "Slovakia",
+  "Slovenia",
+  "Solomon Islands",
+  "Somalia",
+  "South Africa",
+  "South Korea",
+  "South Sudan",
+  "Spain",
+  "Sri Lanka",
+  "Sudan",
+  "Suriname",
+  "Sweden",
+  "Switzerland",
+  "Syria",
+  "Taiwan",
+  "Tajikistan",
+  "Tanzania",
+  "Thailand",
+  "Timor-Leste",
+  "Togo",
+  "Tonga",
+  "Trinidad and Tobago",
+  "Tunisia",
+  "Turkey",
+  "Turkmenistan",
+  "Tuvalu",
+  "Uganda",
+  "Ukraine",
+  "United Arab Emirates",
+  "United Kingdom",
+  "United States",
+  "Uruguay",
+  "Uzbekistan",
+  "Vanuatu",
+  "Vatican City",
+  "Venezuela",
+  "Vietnam",
+  "Yemen",
+  "Zambia",
+  "Zimbabwe",
+];
+
+// INAT_LANGUAGES array defines supported languages for the application
+const INAT_LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "es", name: "Español" },
+  { code: "fr", name: "Français" },
+  { code: "de", name: "Deutsch" },
+  { code: "it", name: "Italiano" },
+  { code: "pt", name: "Português" },
+  { code: "ru", name: "Русский" },
+  { code: "ja", name: "日本語" },
+  { code: "zh-CN", name: "简体中文" },
+  { code: "zh-TW", name: "繁體中文" },
+];
+
+// FEATURED_QUERIES array contains popular species queries
+const FEATURED_QUERIES = [
+  "Panthera uncia",
+  "Danaus plexippus",
+  "Falco peregrinus",
+  "Ailurus fulgens",
+  "Morpho menelaus",
+  "Amphiprion ocellaris",
+  "Bubo scandiacus",
+  "Chelonia mydas",
+  "Bombus affinis",
+  "Orcinus orca",
+];
+
+// GLOBAL_SPECIES_ESTIMATES object provides estimated species counts by category
+const GLOBAL_SPECIES_ESTIMATES = {
+  Mammalia: {
+    total: 6500,
+    label: "Mammals",
+    color: "bg-orange-500",
+    border: "border-orange-200",
+    text: "text-orange-700",
+  },
+  Aves: {
+    total: 11000,
+    label: "Birds",
+    color: "bg-blue-400",
+    border: "border-blue-200",
+    text: "text-blue-700",
+  },
+  Reptilia: {
+    total: 12000,
+    label: "Reptiles",
+    color: "bg-green-600",
+    border: "border-green-200",
+    text: "text-green-700",
+  },
+  Amphibia: {
+    total: 8700,
+    label: "Amphibians",
+    color: "bg-lime-500",
+    border: "border-lime-200",
+    text: "text-lime-700",
+  },
+  Actinopterygii: {
+    total: 34000,
+    label: "Fishes",
+    color: "bg-blue-600",
+    border: "border-blue-200",
+    text: "text-blue-700",
+  },
+  Insecta: {
+    total: 1000000,
+    label: "Insects",
+    color: "bg-amber-600",
+    border: "border-amber-200",
+    text: "text-amber-700",
+  },
+  Plantae: {
+    total: 400000,
+    label: "Plants",
+    color: "bg-emerald-500",
+    border: "border-emerald-200",
+    text: "text-emerald-700",
+  },
+  Fungi: {
+    total: 150000,
+    label: "Fungi",
+    color: "bg-purple-600",
+    border: "border-purple-200",
+    text: "text-purple-700",
+  },
+  Mollusca: {
+    total: 85000,
+    label: "Mollusks",
+    color: "bg-pink-500",
+    border: "border-pink-200",
+    text: "text-pink-700",
+  },
+  Arachnida: {
+    total: 100000,
+    label: "Arachnids",
+    color: "bg-red-800",
+    border: "border-red-200",
+    text: "text-red-900",
+  },
+};
+
+// TROPHIES_DATA array defines achievements for users based on their collection
+const TROPHIES_DATA = [
+  {
+    id: "newbie",
+    threshold: 1,
+    icon: "🌱",
+    title: "Novice",
+    desc: "Collect your first species",
+  },
+  {
+    id: "explorer",
+    threshold: 10,
+    icon: "🔭",
+    title: "Explorer",
+    desc: "Collect 10 species",
+  },
+  {
+    id: "expert",
+    threshold: 50,
+    icon: "🦁",
+    title: "Master",
+    desc: "Collect 50 species",
+  },
+  {
+    id: "ornitho",
+    family: "Aves",
+    threshold: 5,
+    icon: "🦅",
+    title: "Bird Watcher",
+    desc: "Collect 5 birds",
+  },
+  {
+    id: "botanist",
+    family: "Plantae",
+    threshold: 5,
+    icon: "🌻",
+    title: "Botanist",
+    desc: "Collect 5 plants",
+  },
+  {
+    id: "globetrotter",
+    countryThreshold: 3,
+    icon: "🌍",
+    title: "Traveler",
+    desc: "Observe in 3 countries",
+  },
+];
+
+// INAT_API_BASE is the base URL for API calls to iNaturalist
+const INAT_API_BASE = "https://api.inaturalist.org/v1"; // Base URL for API calls
+
+// --- 2. HELPERS (Optimized & Robust) ---
+
+// getGenus function extracts the genus from a scientific name
+const getGenus = (scientificName) =>
+  scientificName ? scientificName.split(" ")[0] : "Unknown"; // Extracts genus from scientific name
+
+// formatCommonName function formats the common name for display
+const formatCommonName = (name) => {
+  if (!name) return "Unknown"; // Return 'Unknown' if name is not provided
+  const cleaned = name.replace(/-/g, " "); // Replace hyphens with spaces
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1); // Capitalize first letter
+};
+
+// parseAncestry function processes the ancestry of a taxon
+const parseAncestry = (item) => {
+  let order = "Unknown Order"; // Default order
+  let family = "Unknown Family"; // Default family
+  let genus = null; // Initialize genus
+  let genusId = null; // Initialize genus ID
+  let familyId = null; // Initialize family ID
+
+  if (item.ancestors && Array.isArray(item.ancestors)) {
+    // Process ancestors if available
+    const orderObj = item.ancestors.find((a) => a.rank === "order");
+    const familyObj = item.ancestors.find((a) => a.rank === "family");
+    const genusObj = item.ancestors.find((a) => a.rank === "genus");
+
+    if (orderObj) order = orderObj.name;
+    if (familyObj) {
+      family = familyObj.name;
+      familyId = familyObj.id;
+    }
+    if (genusObj) {
+      genus = genusObj.name;
+      genusId = genusObj.id;
+    }
+  }
+
+  // Fallback: If API didn't provide ancestors, try to guess Genus from scientific name
+  if (!genus && item.name) {
+    genus = item.name.split(" ")[0];
+  }
+
+  return { order, family, genus, genusId, familyId }; // Return parsed data
+};
+
+// FIX: Safer API handling with try/catch to prevent 'message is read-only' crash
+const searchRemoteTaxa = async (query, locale = "en", signal = null) => {
+  if (!query || query.length < 2) return; // Validate query length
+  try {
+    const response = await fetch(
+      `${INAT_API_BASE}/taxa?q=${encodeURIComponent(
+        query
+      )}&rank=species&is_active=true&per_page=30&locale=${locale}`,
+      { signal }
+    );
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.results
+      .filter((item) => item.observations_count > 0)
+      .map((item) => ({
+        id: item.id,
+        scientific_name: item.name,
+        common_name: item.preferred_common_name || item.name,
+        rank: item.rank,
+        observations: item.observations_count,
+        iconic: item.iconic_taxon_name || "Unknown",
+        image: item.default_photo
+          ? item.default_photo.medium_url || item.default_photo.square_url
+          : null,
+        ...parseAncestry(item),
+      }));
+  } catch (error) {
+    if (error.name !== "AbortError")
+      console.log("Search error - check network");
+    return [];
+  }
+};
+
+// fetchTaxonDetails function retrieves details for a specific taxon
+const fetchTaxonDetails = async (taxonId, locale = "en") => {
+  try {
+    const response = await fetch(
+      `${INAT_API_BASE}/taxa/${taxonId}?locale=${locale}`
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.results?.[0] || null;
+  } catch (error) {
+    console.log("Details error - check network");
+    return null;
+  }
+};
+
+// fetchTaxonChildrenCount function gets the count of children taxa for a given taxon
+const fetchTaxonChildrenCount = async (
+  taxonId,
+  taxonName = null,
+  rank = "family"
+) => {
+  try {
+    let effectiveId = taxonId;
+    if (!effectiveId && taxonName) {
+      const searchRes = await fetch(
+        `${INAT_API_BASE}/taxa?q=${encodeURIComponent(
+          taxonName
+        )}&rank=${rank}&per_page=1`
+      );
+      const searchData = await searchRes.json();
+      effectiveId = searchData.results?.[0]?.id;
+    }
+    if (!effectiveId) return null;
+
+    const response = await fetch(
+      `${INAT_API_BASE}/taxa?taxon_id=${effectiveId}&rank=species&per_page=0`
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.total_results || 0;
+  } catch (error) {
+    console.log("Count fetch error - check network");
+    return null;
+  }
+};
+
+// --- 3. COMPONENTS ---
+
+// Toast component displays a notification message
+const Toast = ({ message, onClose, type = "success" }) => (
+  <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-300 z-50 whitespace-nowrap">
+    {type === "loading" ? (
+      <Loader className="w-5 h-5 text-emerald-400 animate-spin" />
+    ) : (
+      <CheckCircle className="w-5 h-5 text-emerald-400" />
+    )}
+    <span className="font-medium text-sm">{message}</span>
+  </div>
+);
+
+// CountryTag component displays a tag for a selected country
+const CountryTag = ({ name, onRemove }) => (
+  <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200">
+    {name}
+    {onRemove && (
+      <button onClick={() => onRemove(name)} className="hover:text-indigo-900">
+        <X className="w-3 h-3" />
+      </button>
+    )}
+  </span>
+);
+
+// FilterChip component represents a filter option in the UI
+const FilterChip = ({ label, active, onClick, color, count }) => (
+  <button
+    onClick={onClick}
+    className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
+      active
+        ? "bg-emerald-600 text-white shadow-md shadow-emerald-200"
+        : "bg-white text-slate-500 border border-slate-200 hover:border-emerald-300"
+    }`}
+  >
+    {label}
+    {count !== undefined && (
+      <span
+        className={`px-1.5 py-0.5 rounded-full text-[9px] ${
+          active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+        }`}
+      >
+        {count}
+      </span>
+    )}
+  </button>
+);
+
+// TaxonCard component displays information about a taxon
+const TaxonCard = ({ taxon, onObserve, inCollection, featured = false, t }) => (
+  <div
+    className={`bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative group transition-all ${
+      featured
+        ? "h-auto ring-4 ring-emerald-500/20 shadow-lg"
+        : "h-full hover:shadow-md"
+    }`}
+  >
+    <div
+      className={`${featured ? "h-64 md:h-80" : "h-40"} bg-slate-100 relative`}
+    >
+      {taxon.image ? (
+        <img
+          src={taxon.image}
+          alt={taxon.common_name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-50">
+          <Leaf className="w-12 h-12 opacity-20" />
+        </div>
+      )}
+      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-8">
+        <h3
+          className={`font-bold text-white truncate shadow-sm ${
+            featured ? "text-2xl" : "text-base"
+          }`}
+        >
+          {formatCommonName(taxon.common_name || taxon.scientific_name)}
+        </h3>
+        <p className="text-xs text-slate-200 italic">{taxon.scientific_name}</p>
+      </div>
+      <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full uppercase tracking-wider">
+        {taxon.iconic || "Species"}
+      </div>
+      {featured && (
+        <div className="absolute top-2 left-2 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1 animate-pulse">
+          <Sparkles className="w-3 h-3" /> {t.discover}
+        </div>
+      )}
+    </div>
+    <div className="p-3 flex items-center justify-between gap-3 mt-auto">
+      <div className="text-xs text-slate-500">
+        <span className="font-semibold">
+          {taxon.observations.toLocaleString()}
+        </span>{" "}
+        obs
+      </div>
+      {inCollection ? (
+        <div className="flex items-center gap-1 text-emerald-600 text-xs font-bold bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
+          <MapPin className="w-3 h-3" />
+          {t.added.toUpperCase()}
+        </div>
+      ) : (
+        <button
+          onClick={() => onObserve(taxon)}
+          className={`flex-1 py-2 ${
+            featured
+              ? "bg-emerald-600 hover:bg-emerald-700 text-sm"
+              : "bg-slate-900 hover:bg-slate-700 text-xs"
+          } text-white rounded-lg font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2`}
+        >
+          <Camera className="w-3 h-3" />
+          {featured ? t.addCollection : "Observe"}
+        </button>
+      )}
+    </div>
+  </div>
+);
+
+// CollectionItem component represents an item in the user's collection
+const CollectionItem = ({ item, onRequestDelete, onEdit }) => {
+  const [showCountries, setShowCountries] = useState(false); // State to manage country visibility
+
+  return (
+    // Added hover:z-30 to ensure this card sits on top of others when interacting
+    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative h-full group hover:z-30">
+      {/* Edit/Delete Buttons */}
+      <div className="absolute top-3 right-3 flex gap-1 z-10 bg-white/80 backdrop-blur-sm rounded-lg pl-1">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(item);
+          }}
+          className="text-slate-400 hover:text-blue-600 p-1.5 rounded-lg transition-colors"
+        >
+          <Edit2 className="w-4 h-4" />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRequestDelete(item);
+          }}
+          className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="flex items-start gap-4">
+        <div className="w-20 h-20 bg-slate-100 rounded-lg overflow-hidden shrink-0 border border-slate-100 relative">
+          {item.image ? (
+            <img
+              src={item.image}
+              alt="Thumbnail"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-slate-300">
+              <Leaf className="w-6 h-6" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0 pt-1">
+          <div className="pr-16">
+            <h4 className="font-bold text-slate-800 text-base leading-snug break-words">
+              {formatCommonName(item.commonName)}
+            </h4>
+            <p className="text-xs text-slate-500 italic mt-0.5 break-words">
+              {item.scientificName}
+            </p>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2 items-center">
+            <span className="text-[10px] uppercase font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded tracking-wide">
+              {item.iconicGroup}
+            </span>
+
+            {/* FIX 2: Z-50 on the tooltip itself */}
+            {item.countries && item.countries.length > 0 && (
+              <div
+                className="relative"
+                onMouseEnter={() => setShowCountries(true)}
+                onMouseLeave={() => setShowCountries(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowCountries(!showCountries);
+                }}
+              >
+                <button className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded flex items-center gap-1 cursor-pointer hover:bg-indigo-100 transition-colors">
+                  <Globe className="w-3 h-3" /> {item.countries.length}
+                </button>
+
+                {showCountries && (
+                  <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 p-3 z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Locations
+                      </span>
+                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-md">
+                        {item.countries.length}
+                      </span>
+                    </div>
+                    <ul className="space-y-1.5 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 pr-1">
+                      {item.countries.map((c) => (
+                        <li
+                          key={c}
+                          className="text-xs text-slate-700 font-medium flex items-center gap-2"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                          <span className="truncate">{c}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {item.note && (
+            <p className="text-sm text-slate-600 mt-2 italic border-l-2 border-slate-200 pl-2 line-clamp-1">
+              "{item.note}"
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// CompletedGeneraView component displays completed genera in the user's collection
+const CompletedGeneraView = ({ completedList }) => {
+  const [activeFilter, setActiveFilter] = useState("All");
+  const availableGroups = useMemo(() => {
+    const groups = new Set(
+      completedList.map((data) => data.species[0]?.iconicGroup).filter(Boolean)
+    );
+    return Array.from(groups).sort();
+  }, [completedList]);
+
+  const filteredList = useMemo(() => {
+    if (activeFilter === "All") return completedList;
+    return completedList.filter(
+      (data) => data.species[0]?.iconicGroup === activeFilter
+    );
+  }, [completedList, activeFilter]);
+
+  if (completedList.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center h-64 opacity-60 animate-in fade-in">
+        <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mb-4">
+          <Trophy className="w-10 h-10 text-slate-400" />
+        </div>
+        <h3 className="font-bold text-slate-700 text-lg">
+          No Completed Genera Yet
+        </h3>
+        <p className="text-sm text-slate-500 max-w-xs mt-2">
+          Collect every species within a specific genus to unlock a trophy here!
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in slide-in-from-right duration-300">
+      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+        <div className="bg-white p-3 rounded-full text-yellow-600 shadow-sm">
+          <Trophy className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-yellow-800 text-lg">Trophy Room</h3>
+          <p className="text-xs text-yellow-700">
+            You have completed <strong>{completedList.length}</strong> full
+            genera!
+          </p>
+        </div>
+      </div>
+      {availableGroups.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button
+            onClick={() => setActiveFilter("All")}
+            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+              activeFilter === "All"
+                ? "bg-yellow-600 text-white shadow-md"
+                : "bg-white text-slate-500 border border-slate-200 hover:border-yellow-300"
+            }`}
+          >
+            All
+          </button>
+          {availableGroups.map((group) => (
+            <button
+              key={group}
+              onClick={() => setActiveFilter(group)}
+              className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                activeFilter === group
+                  ? "bg-yellow-600 text-white shadow-md"
+                  : "bg-white text-slate-500 border border-slate-200 hover:border-yellow-300"
+              }`}
+            >
+              {group}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-20">
+        {filteredList.map((data) => {
+          const coverImage = data.species.find((s) => s.image)?.image;
+          return (
+            <div
+              key={data.genus}
+              className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all group cursor-default"
+            >
+              {coverImage ? (
+                <img
+                  src={coverImage}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 z-0"
+                  alt={data.genus}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-slate-800 flex items-center justify-center z-0">
+                  <Leaf className="w-12 h-12 text-slate-700" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90 z-0 pointer-events-none" />
+              <div className="absolute inset-0 p-4 flex flex-col justify-between z-10">
+                <div className="self-end">
+                  <span className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-1 rounded-md shadow-sm">
+                    {data.count}/{data.total}
+                  </span>
+                </div>
+                <div className="transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-300">
+                  <div className="flex items-center gap-1 text-yellow-400 mb-1">
+                    <Sparkles className="w-3 h-3 fill-yellow-400" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">
+                      Completed
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-white italic tracking-tight leading-none drop-shadow-md break-words">
+                    {data.genus}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// AchievementsView component shows user achievements based on their collection
+const AchievementsView = ({ collection }) => {
+  return (
+    <div className="space-y-6 animate-in slide-in-from-right duration-300">
+      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-100 rounded-xl p-6 text-center">
+        <h2 className="text-xl font-bold text-yellow-800 flex items-center justify-center gap-2">
+          <Trophy className="w-6 h-6" /> Achievements
+        </h2>
+        <p className="text-sm text-yellow-700 mt-1">
+          Unlock badges by exploring nature!
+        </p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {TROPHIES_DATA.map((badge) => {
+          const uniqueCountries = new Set(
+            collection.flatMap((o) => o.countries || [])
+          ).size;
+          let current = 0;
+          let total = badge.threshold || badge.countryThreshold;
+          let unlocked = false;
+          if (badge.countryThreshold) {
+            current = uniqueCountries;
+            unlocked = current >= total;
+          } else if (badge.family) {
+            current = collection.filter(
+              (o) =>
+                o.iconicGroup === badge.family ||
+                o.family === badge.family ||
+                o.order === badge.family
+            ).length;
+            unlocked = current >= total;
+          } else {
+            current = collection.length;
+            unlocked = current >= total;
+          }
+          const progress = Math.min(100, (current / total) * 100);
+          return (
+            <div
+              key={badge.id}
+              className={`p-4 rounded-2xl border-2 flex flex-col items-center text-center transition-all relative overflow-hidden ${
+                unlocked
+                  ? "bg-white border-yellow-400 shadow-lg"
+                  : "bg-slate-50 border-slate-200 opacity-60 grayscale"
+              }`}
+            >
+              <div className="text-4xl mb-2 filter drop-shadow-sm">
+                {badge.icon}
+              </div>
+              <h3 className="font-bold text-slate-800 text-sm">
+                {badge.title}
+              </h3>
+              <p className="text-[10px] text-slate-500 mb-3">{badge.desc}</p>
+              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mt-auto">
+                <div
+                  className={`h-full transition-all duration-1000 ${
+                    unlocked ? "bg-yellow-400" : "bg-slate-400"
+                  }`}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="text-[9px] font-bold text-slate-400 mt-1">
+                {current} / {total}
+              </div>
+              {unlocked && (
+                <div className="absolute top-0 right-0 -mt-2 -mr-2 w-8 h-8 bg-yellow-400 blur-xl opacity-50"></div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// GroupBox component represents a group of items in the UI
+const GroupBox = ({ group, count, onClick }) => {
+  const config = GLOBAL_SPECIES_ESTIMATES[group] || {
+    color: "bg-slate-500",
+    border: "border-slate-200",
+    text: "text-slate-700",
+    label: group,
+  };
+  return (
+    <button
+      onClick={onClick}
+      className={`relative p-4 rounded-xl border-2 ${config.border} bg-white hover:shadow-md transition-all text-left flex flex-col h-28 justify-between overflow-hidden group`}
+    >
+      <div
+        className={`absolute top-0 right-0 p-2 rounded-bl-xl ${config.color} bg-opacity-10`}
+      >
+        <Layers className={`w-5 h-5 ${config.text}`} />
+      </div>
+      <span className={`text-3xl font-bold ${config.text}`}>{count}</span>
+      <span className="font-bold text-slate-600 text-sm uppercase tracking-wide">
+        {config.label}
+      </span>
+    </button>
+  );
+};
+
+// StatBar component displays a statistical bar for visual representation
+const StatBar = ({ label, count, total, colorClass }) => {
+  return (
+    <div className="mb-4">
+      <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
+        <span className="font-bold">{label}</span>
+        <div className="flex gap-1">
+          <span className="text-emerald-700 font-bold">
+            {count.toLocaleString()}
+          </span>
+          {total && (
+            <span className="text-slate-400">/ {total.toLocaleString()}</span>
+          )}
+        </div>
+      </div>
+      <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-100">
+        <div
+          className={`h-full ${colorClass} transition-all duration-500`}
+          style={{ width: `${total ? (count / total) * 100 : 0}%` }}
+        ></div>
+      </div>
+    </div>
+  );
+};
+
+// GlobalStatCard component displays global statistics with an icon
+const GlobalStatCard = ({
+  label,
+  value,
+  subtext,
+  icon: Icon,
+  color,
+  textColor,
+  onClick,
+}) => (
+  <div
+    onClick={onClick}
+    className={`bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 ${
+      onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""
+    }`}
+  >
+    <div
+      className={`w-12 h-12 rounded-full flex items-center justify-center ${color} bg-opacity-10`}
+    >
+      <Icon
+        className={`w-6 h-6 ${textColor || color.replace("bg-", "text-")}`}
+      />
+    </div>
+    <div>
+      <div className="text-2xl font-bold text-slate-800">{value}</div>
+      <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">
+        {label}
+      </div>
+      {subtext && (
+        <div className="text-[10px] text-slate-400 mt-0.5">{subtext}</div>
+      )}
+    </div>
+  </div>
+);
+
+// Modal component represents a modal dialog in the UI
+const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  isLoading,
+  loadingText,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl w-full max-w-md sm:max-w-xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden relative">
+        {/* Loading Overlay inside Modal */}
+        {isLoading && (
+          <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex items-center justify-center flex-col">
+            <Loader className="w-8 h-8 text-emerald-500 animate-spin mb-2" />
+            <span className="text-xs font-bold text-emerald-700">
+              {loadingText}
+            </span>
+          </div>
+        )}
+
+        {/* Modal Header */}
+        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+          <h2 className="font-bold text-lg text-slate-800">{title}</h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-slate-200 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-4 overflow-y-auto">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+// DrillDownView component displays detailed information for a selected group
+const DrillDownView = ({ group, data, onBack }) => {
+  const taxonomyTree = useMemo(() => {
+    const tree = {};
+    data.forEach((item) => {
+      const order = item.order || "Unclassified";
+      const family = item.family || "Unclassified";
+      if (!tree[order]) tree[order] = {};
+      if (!tree[order][family]) tree[order][family] = [];
+      tree[order][family].push(item);
+    });
+    return tree;
+  }, [data]);
+
+  const [openOrder, setOpenOrder] = useState(null);
+  const [openFamily, setOpenFamily] = useState(null);
+  const [missingCounts, setMissingCounts] = useState({});
+
+  useEffect(() => {
+    const fetchMissing = async () => {
+      const familiesToFetch = new Set();
+      Object.values(taxonomyTree).forEach((families) => {
+        Object.entries(families).forEach(([familyName, speciesList]) => {
+          if (!speciesList[0].familyTotal && !missingCounts[familyName]) {
+            familiesToFetch.add(familyName);
+          }
+        });
+      });
+      for (const familyName of familiesToFetch) {
+        const count = await fetchTaxonChildrenCount(null, familyName, "family");
+        if (count)
+          setMissingCounts((prev) => ({ ...prev, [familyName]: count }));
+      }
+    };
+    fetchMissing();
+  }, [taxonomyTree]);
+
+  return (
+    <div className="absolute inset-0 bg-slate-50 z-20 flex flex-col animate-in slide-in-from-right duration-300">
+      <div className="p-4 bg-white border-b border-slate-200 flex items-center gap-3 shrink-0">
+        <button
+          onClick={onBack}
+          className="p-2 hover:bg-slate-100 rounded-full"
+        >
+          <ArrowLeft className="w-5 h-5 text-slate-600" />
+        </button>
+        <h2 className="font-bold text-lg text-slate-800">{group} Breakdown</h2>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {Object.entries(taxonomyTree).map(([order, families]) => (
+          <div
+            key={order}
+            className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+          >
+            <button
+              onClick={() => setOpenOrder(openOrder === order ? null : order)}
+              className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                  {Object.values(families).reduce(
+                    (acc, arr) => acc + arr.length,
+                    0
+                  )}
+                </div>
+                <span className="font-bold text-slate-700">{order}</span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-slate-400 transition-transform ${
+                  openOrder === order ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {openOrder === order && (
+              <div className="bg-slate-50 border-t border-slate-100 p-2 space-y-2">
+                {Object.entries(families).map(([family, species]) => {
+                  const savedTotal = species[0].familyTotal;
+                  const liveTotal = missingCounts[family];
+                  const total = savedTotal || liveTotal;
+                  const count = species.length;
+                  const isComplete = total && count >= total;
+                  return (
+                    <div
+                      key={family}
+                      className="bg-white rounded-lg border border-slate-200 p-3"
+                    >
+                      <button
+                        onClick={() =>
+                          setOpenFamily(openFamily === family ? null : family)
+                        }
+                        className="w-full flex justify-between items-center mb-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {family}
+                          </span>
+                          {total ? (
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                isComplete
+                                  ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                  : "bg-slate-100 text-slate-500 border-slate-200"
+                              }`}
+                            >
+                              {count} / {total.toLocaleString()}{" "}
+                              {isComplete && "🏆"}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 flex items-center gap-1">
+                              {count} collected{" "}
+                              <Loader className="w-2 h-2 animate-spin ml-1 text-slate-400" />
+                            </span>
+                          )}
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 text-slate-300 transition-transform ${
+                            openFamily === family ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {openFamily === family && (
+                        <div className="space-y-2 pl-2 border-l-2 border-slate-100">
+                          {species.map((s) => (
+                            <div
+                              key={s.uuid}
+                              className="flex items-center gap-3 py-1"
+                            >
+                              {s.image ? (
+                                <img
+                                  src={s.image}
+                                  className="w-8 h-8 rounded object-cover bg-slate-200"
+                                  alt="Thumb"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
+                                  <Leaf className="w-4 h-4 text-slate-300" />
+                                </div>
+                              )}
+                              <div>
+                                <div className="text-sm font-bold text-slate-700 leading-none">
+                                  {formatCommonName(s.commonName)}
+                                </div>
+                                <div className="text-[10px] text-slate-400 italic">
+                                  {s.scientificName}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const generateCSV = (collection) => {
+  const headers = [
+    "uuid",
+    "taxon_id",
+    "scientific_name",
+    "common_name",
+    "iconic_group",
+    "order",
+    "family",
+    "genus",
+    "genus_total",
+    "note",
+    "countries",
+    "image_url",
+  ];
+  const rows = collection.map((item) => [
+    item.uuid,
+    item.taxonId,
+    `"${item.scientificName}"`,
+    `"${item.commonName}"`,
+    `"${item.iconicGroup || "Unknown"}"`,
+    `"${item.order || ""}"`,
+    `"${item.family || ""}"`,
+    `"${item.genus || "Unknown"}"`,
+    item.genusTotal || 0,
+    `"${item.note || ""}"`,
+    `"${(item.countries || []).join("|")}"`,
+    `"${item.image || ""}"`,
+  ]);
+  return [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+};
+
+const parseCSV = (text) => {
+  const lines = text.split("\n");
+  const items = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const cols = lines[i].split(",");
+    if (cols.length >= 6) {
+      const countryStr = cols[10] ? cols[10].replace(/"/g, "") : "";
+      items.push({
+        uuid: cols[0],
+        taxonId: parseInt(cols[1]),
+        scientificName: cols[2].replace(/"/g, ""),
+        commonName: cols[3].replace(/"/g, ""),
+        iconicGroup: cols[4].replace(/"/g, ""),
+        order: cols[5] ? cols[5].replace(/"/g, "") : "Unknown",
+        family: cols[6] ? cols[6].replace(/"/g, "") : "Unknown",
+        genus: cols[7]
+          ? cols[7].replace(/"/g, "")
+          : getGenus(cols[2].replace(/"/g, "")),
+        genusTotal: parseInt(cols[8]) || 5,
+        note: cols[9] ? cols[9].replace(/"/g, "") : "",
+        countries: countryStr ? countryStr.split("|") : [],
+        image: cols[11] ? cols[11].replace(/"/g, "") : null,
+        dateObserved: new Date().toISOString(),
+      });
+    }
+  }
+  return items;
+};
+
+// --- 4. MAIN APP ---
+
+// SpeciesApp is the main application component
+export default function SpeciesApp() {
+  const [activeTab, setActiveTab] = useState("explore");
+  const [statsSubTab, setStatsSubTab] = useState("breakdown");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [userCollection, setUserCollection] = useState(() => {
+    try {
+      const saved = localStorage.getItem("my_pokedex");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to load save data", e);
+      return [];
+    }
+  });
+
+  const [listFilter, setListFilter] = useState("All");
+  const [countryFilter, setCountryFilter] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [locale, setLocale] = useState(
+    () => localStorage.getItem("bioguide_locale") || "en"
+  );
+
+  const [apiResults, setApiResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [featuredTaxon, setFeaturedTaxon] = useState(null);
+
+  const [hasTranslated, setHasTranslated] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const translateCollectionRef = useRef(null);
+
+  const [modalMode, setModalMode] = useState("add");
+  const [selectedTaxon, setSelectedTaxon] = useState(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [observationNote, setObservationNote] = useState("");
+  const [observationCountries, setObservationCountries] = useState([]);
+  const [countryInput, setCountryInput] = useState("");
+  const [countrySuggestions, setCountrySuggestions] = useState([]);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [isClearingAll, setIsClearingAll] = useState(false);
+  const [deleteCodeInput, setDeleteCodeInput] = useState("");
+  const [importStatus, setImportStatus] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
+  const [toastType, setToastType] = useState("success");
+  const [selectedGroupForDetails, setSelectedGroupForDetails] = useState(null);
+
+  const DELETE_CONFIRMATION_CODE = "DELETE";
+  const t = useMemo(() => TRANSLATIONS[locale] || TRANSLATIONS["en"], [locale]);
+
+  const stats = useMemo(() => {
+    const total = userCollection.length;
+    const groupCounts = {};
+    const genusData = {};
+
+    userCollection.forEach((item) => {
+      const group = item.iconicGroup || "Unknown";
+      groupCounts[group] = (groupCounts[group] || 0) + 1;
+      const genus = item.genus || getGenus(item.scientificName);
+      if (!genusData[genus]) {
+        genusData[genus] = {
+          count: 0,
+          total: item.genusTotal || 5,
+          species: [],
+        };
+      }
+      const isDuplicate = genusData[genus].species.some(
+        (s) => s.taxonId === item.taxonId
+      );
+      if (!isDuplicate) {
+        genusData[genus].count += 1;
+        genusData[genus].species.push(item);
+      }
+      if (item.genusTotal && item.genusTotal > genusData[genus].total) {
+        genusData[genus].total = item.genusTotal;
+      }
+    });
+
+    const groups = Object.entries(groupCounts).sort((a, b) => b[1] - a[1]);
+    const completedGeneraList = Object.entries(genusData)
+      .map(([genus, data]) => ({ genus, ...data }))
+      .filter((g) => g.count >= g.total && g.total > 0)
+      .sort((a, b) => b.total - a.total);
+    const completedGeneraCount = completedGeneraList.length;
+    const globalComparison = Object.entries(GLOBAL_SPECIES_ESTIMATES)
+      .map(([key, data]) => {
+        const userCount = userCollection.filter(
+          (i) => i.iconicGroup === key || i.iconicGroup === data.label
+        ).length;
+        return { key, ...data, userCount };
+      })
+      .sort(
+        (a, b) => b.userCount / (b.total || 1) - a.userCount / (a.total || 1)
+      );
+
+    return {
+      total,
+      groups,
+      completedGeneraCount,
+      completedGeneraList,
+      globalComparison,
+    };
+  }, [userCollection]);
+
+  useEffect(() => {
+    const saveTimer = setTimeout(() => {
+      localStorage.setItem("my_pokedex", JSON.stringify(userCollection));
+      localStorage.setItem("bioguide_locale", locale);
+    }, 500);
+    return () => clearTimeout(saveTimer);
+  }, [userCollection, locale]);
+
+  useEffect(() => {
+    const loadFeatured = async () => {
+      let query =
+        featuredTaxon && featuredTaxon.scientific_name
+          ? featuredTaxon.scientific_name
+          : FEATURED_QUERIES[
+              Math.floor(Math.random() * FEATURED_QUERIES.length)
+            ];
+      try {
+        const results = await searchRemoteTaxa(query, locale);
+        if (results.length > 0) setFeaturedTaxon(results[0]);
+      } catch (e) {
+        console.error("Failed to load featured", e);
+      }
+    };
+    loadFeatured();
+  }, [locale]);
+
+  useEffect(() => {
+     // do nothing if no items
+     if (!userCollection || userCollection.length === 0) return;
+ 
+     // avoid repeating work if we've already translated for this locale
+     if (translateCollectionRef.current === locale) return;
+ 
+     let cancelled = false;
+ 
+     const translateCollection = async () => {
+       setIsTranslating(true);
+       setToastMessage(t.translating);
+       setToastType("loading");
+       try {
+         const ids = userCollection.map((i) => i.taxonId);
+         const uniqueIds = [...new Set(ids)];
+         const chunkSize = 30;
+         const newNamesMap = {};
+         for (let i = 0; i < uniqueIds.length; i += chunkSize) {
+           if (cancelled) break;
+           const chunk = uniqueIds.slice(i, i + chunkSize);
+           const response = await fetch(
+             `${INAT_API_BASE}/taxa/${chunk.join(",")}?locale=${locale}`
+           );
+           const data = await response.json();
+           if (data.results) {
+             data.results.forEach((taxon) => {
+               newNamesMap[taxon.id] = taxon.preferred_common_name || taxon.name;
+             });
+           }
+         }
+         if (!cancelled) {
+           setUserCollection((prev) =>
+             prev.map((item) => ({
+               ...item,
+               commonName: newNamesMap[item.taxonId] || item.commonName,
+             }))
+           );
+           setToastMessage(t.translationComplete);
+           setToastType("success");
+           // mark this locale as translated
+           translateCollectionRef.current = locale;
+           setHasTranslated(true);
+         }
+       } catch (err) {
+         if (!cancelled) console.error("Translation failed", err);
+       } finally {
+         if (!cancelled) setIsTranslating(false);
+       }
+    };
+    translateCollection();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [locale, userCollection]);
+
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setApiResults([]);
+      return;
+    }
+    const controller = new AbortController();
+    const timerId = setTimeout(async () => {
+      setIsSearching(true);
+      setApiError(null);
+      try {
+        const results = await searchRemoteTaxa(
+          searchQuery,
+          locale,
+          controller.signal
+        );
+        setApiResults(results);
+      } catch (err) {
+        setApiError("Could not connect to iNaturalist.");
+      } finally {
+        setIsSearching(false);
+      }
+    }, 600);
+    return () => {
+      clearTimeout(timerId);
+      controller.abort();
+    };
+  }, [searchQuery, locale]);
+
+  useEffect(() => {
+    if (countryInput.length > 0) {
+      const matches = COUNTRIES.filter(
+        (c) =>
+          c.toLowerCase().startsWith(countryInput.toLowerCase()) &&
+          !observationCountries.includes(c)
+      ).slice(0, 5);
+      setCountrySuggestions(matches);
+    } else {
+      setCountrySuggestions([]);
+    }
+  }, [countryInput, observationCountries]);
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  const openAddModal = async (taxon) => {
+    setModalMode("add");
+    setSelectedTaxon(taxon);
+    setIsLoadingDetails(true);
+    try {
+      const detailedTaxon = await fetchTaxonDetails(taxon.id, locale);
+      let ancestryData = {};
+      let genusId = null;
+      let familyId = null;
+      let commonName = taxon.common_name;
+      if (detailedTaxon) {
+        const deep = parseAncestry(detailedTaxon);
+        ancestryData = {
+          order: deep.order,
+          family: deep.family,
+          genus: deep.genus,
+        };
+        genusId = deep.genusId;
+        familyId = deep.familyId;
+        if (detailedTaxon.preferred_common_name)
+          commonName = detailedTaxon.preferred_common_name;
+      } else {
+        const shallow = parseAncestry(taxon);
+        ancestryData = {
+          order: shallow.order,
+          family: shallow.family,
+          genus: shallow.genus,
+        };
+        genusId = shallow.genusId;
+        familyId = shallow.familyId;
+      }
+      const [realGenusTotal, realFamilyTotal] = await Promise.all([
+        fetchTaxonChildrenCount(genusId, ancestryData.genus, "genus"),
+        fetchTaxonChildrenCount(familyId, ancestryData.family, "family"),
+      ]);
+      setSelectedTaxon((prev) => ({
+        ...prev,
+        ...ancestryData,
+        common_name: commonName,
+        genusTotal: realGenusTotal || 5,
+        familyTotal: realFamilyTotal,
+      }));
+    } catch (err) {
+      console.warn("Details error", err);
+    } finally {
+      setIsLoadingDetails(false);
+    }
+    setObservationNote("");
+    setObservationCountries([]);
+    setCountryInput("");
+    setCountrySuggestions([]);
+  };
+
+  const openEditModal = async (item) => {
+    setModalMode("edit");
+    setSelectedTaxon(item);
+    setObservationNote(item.note || "");
+    setObservationCountries(item.countries || []);
+    setCountryInput("");
+    setCountrySuggestions([]);
+    if (!item.genusTotal || item.genusTotal === 5 || !item.familyTotal) {
+      setIsLoadingDetails(true);
+      try {
+        const { genusId, familyId } = parseAncestry(item);
+        let gId = genusId;
+        let fId = familyId;
+        if (!gId || !fId) {
+          const details = await fetchTaxonDetails(item.taxonId, locale);
+          if (details) {
+            const deep = parseAncestry(details);
+            gId = deep.genusId;
+            fId = deep.familyId;
+          }
+        }
+        const [gCount, fCount] = await Promise.all([
+          fetchTaxonChildrenCount(gId, item.genus, "genus"),
+          fetchTaxonChildrenCount(fId, item.family, "family"),
+        ]);
+        setSelectedTaxon((prev) => ({
+          ...prev,
+          genusTotal: gCount || prev.genusTotal,
+          familyTotal: fCount || prev.familyTotal,
+        }));
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    }
+  };
+
+  const addCountry = (name) => {
+    const c = name || countryInput.trim();
+    if (c && !observationCountries.includes(c)) {
+      setObservationCountries([...observationCountries, c]);
+      setCountryInput("");
+      setCountrySuggestions([]);
+    }
+  };
+  const removeCountry = (name) =>
+    setObservationCountries(observationCountries.filter((c) => c !== name));
+
+  const saveObservation = () => {
+    if (!selectedTaxon) return;
+    const baseData = {
+      note: observationNote,
+      countries: observationCountries,
+      genusTotal: selectedTaxon.genusTotal,
+      familyTotal: selectedTaxon.familyTotal,
+    };
+    if (modalMode === "add") {
+      const newObs = {
+        uuid: crypto.randomUUID(),
+        taxonId: selectedTaxon.id,
+        scientificName: selectedTaxon.scientific_name,
+        commonName: selectedTaxon.common_name,
+        iconicGroup: selectedTaxon.iconic,
+        genus: selectedTaxon.genus || getGenus(selectedTaxon.scientific_name),
+        order: selectedTaxon.order || "Unknown",
+        family: selectedTaxon.family || "Unknown",
+        image: selectedTaxon.image,
+        ...baseData,
+      };
+      setUserCollection((prev) => [newObs, ...prev]);
+      setToastMessage(
+        `${t.added} ${formatCommonName(selectedTaxon.common_name)}`
+      );
+    } else {
+      setUserCollection((prev) =>
+        prev.map((item) =>
+          item.uuid === selectedTaxon.uuid ? { ...item, ...baseData } : item
+        )
+      );
+      setToastMessage(
+        `${t.updated} ${formatCommonName(selectedTaxon.commonName)}`
+      );
+    }
+    setSelectedTaxon(null);
+  };
+
+  const handleDeleteRequest = (item) => setItemToDelete(item);
+  const executeDelete = () => {
+    if (itemToDelete) {
+      setUserCollection((prev) =>
+        prev.filter((item) => item.uuid !== itemToDelete.uuid)
+      );
+      setItemToDelete(null);
+    }
+  };
+  const openClearAllModal = () => {
+    setDeleteCodeInput("");
+    setIsClearingAll(true);
+  };
+  const executeClearAll = () => {
+    if (deleteCodeInput === DELETE_CONFIRMATION_CODE) {
+      setUserCollection([]);
+      setIsClearingAll(false);
+      setToastMessage("All data cleared successfully");
+    }
+  };
+  const handleExport = () => {
+    const blob = new Blob([generateCSV(userCollection)], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "bioguide_backup.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const handleImport = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const items = parseCSV(e.target.result);
+        setUserCollection((prev) => [...items, ...prev]);
+        setImportStatus("success");
+        setTimeout(() => setImportStatus(null), 3000);
+      } catch (err) {
+        setImportStatus("error");
+        setTimeout(() => setImportStatus(null), 3000);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <div className="h-screen bg-slate-100 flex flex-col md:flex-row font-sans text-slate-900 w-full overflow-hidden">
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+          type={toastType}
+        />
+      )}
+
+      {/* SIDEBAR */}
+      <aside className="hidden md:flex flex-col w-64 bg-slate-900 text-white shrink-0 shadow-xl">
+        <div className="p-6">
+          <h1 className="font-bold flex items-center gap-3 text-2xl tracking-tight">
+            <Leaf className="w-8 h-8 text-emerald-400" /> BioGuide
+          </h1>
+        </div>
+        <nav className="flex-1 px-4 space-y-2">
+          {[
+            { id: "explore", icon: Search, label: t.explore },
+            {
+              id: "collection",
+              icon: List,
+              label: t.myList,
+              badge: userCollection.length,
+            },
+            { id: "stats", icon: PieChart, label: t.stats },
+            { id: "settings", icon: Settings, label: t.settings },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                activeTab === item.id
+                  ? "bg-emerald-600 text-white shadow-lg"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              {item.label}
+              {item.badge > 0 && (
+                <span className="ml-auto bg-slate-700 text-white text-xs px-2 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+        <div className="p-4 text-xs text-slate-500 text-center border-t border-slate-800">
+          <div className="flex items-center justify-center gap-1 opacity-70">
+            <CheckCircle className="w-3 h-3 text-emerald-500" /> Saved locally
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-50 h-full relative">
+        <header className="md:hidden bg-slate-900 text-white shrink-0 p-4 shadow-md z-10 flex justify-between items-center">
+          <h1 className="font-bold flex items-center gap-2 text-lg">
+            <Leaf className="w-5 h-5 text-emerald-400" /> BioGuide
+          </h1>
+          <div className="text-[10px] text-slate-400 flex items-center gap-1">
+            <CheckCircle className="w-3 h-3 text-emerald-500" /> Saved
+          </div>
+        </header>
+
+        {activeTab === "explore" && (
+          <div className="bg-white border-b border-slate-200 p-4 md:p-6 shadow-sm z-10 sticky top-0">
+            <div className="max-w-3xl mx-auto relative">
+              <Search
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${
+                  isSearching
+                    ? "text-emerald-500 animate-pulse"
+                    : "text-slate-400"
+                }`}
+              />
+              <input
+                type="text"
+                placeholder={t.searchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 text-slate-900 placeholder-slate-400 pl-12 pr-4 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm text-lg"
+                autoFocus
+              />
+              {isSearching && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <Loader className="w-5 h-5 text-emerald-500 animate-spin" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-slate-300">
+          <div className="max-w-7xl mx-auto">
+            {activeTab === "explore" && (
+              <div className="space-y-6">
+                {apiError && (
+                  <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100">
+                    {apiError}
+                  </div>
+                )}
+                {searchQuery.length < 2 ? (
+                  <div className="animate-in fade-in duration-500 max-w-2xl mx-auto">
+                    {featuredTaxon ? (
+                      <div className="space-y-6">
+                        <TaxonCard
+                          taxon={featuredTaxon}
+                          onObserve={openAddModal}
+                          inCollection={userCollection.some(
+                            (u) => u.taxonId === featuredTaxon.id
+                          )}
+                          featured={true}
+                          t={t}
+                        />
+                        <div className="text-center text-slate-400 text-sm">
+                          {t.startTyping}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center mt-20 opacity-50">
+                        <Search className="w-16 h-16 text-slate-300 mb-4" />
+                        <h3 className="text-xl font-bold text-slate-600">
+                          {t.discover}
+                        </h3>
+                        <p className="text-slate-400 mt-2">
+                          {t.loadingFeatured}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                        {apiResults.length} {t.results}
+                      </span>
+                      <a
+                        href="https://www.inaturalist.org"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-emerald-600 flex items-center gap-1 hover:underline"
+                      >
+                        iNaturalist <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {apiResults.map((taxon) => (
+                        <TaxonCard
+                          key={taxon.id}
+                          taxon={taxon}
+                          onObserve={openAddModal}
+                          inCollection={userCollection.some(
+                            (u) => u.taxonId === taxon.id
+                          )}
+                          t={t}
+                        />
+                      ))}
+                    </div>
+                    {apiResults.length === 0 && !isSearching && (
+                      <div className="text-center py-20 text-slate-400">
+                        {t.noResults}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {activeTab === "collection" && (
+              <div className="h-full flex flex-col max-w-7xl mx-auto w-full">
+                <div className="p-4 md:p-6 pb-2 border-b border-slate-200 shrink-0 bg-white z-10 sticky top-0">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                      {t.myObservations}
+                      <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                        {userCollection.length}
+                      </span>
+                    </h2>
+                    <div className="flex gap-2 w-full md:w-auto">
+                      <div className="relative min-w-[140px]">
+                        <select
+                          value={countryFilter}
+                          onChange={(e) => setCountryFilter(e.target.value)}
+                          className="w-full appearance-none pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer hover:bg-slate-100 transition-colors"
+                        >
+                          <option value="All">All Countries</option>
+                          {[
+                            ...new Set(
+                              userCollection.flatMap((i) => i.countries || [])
+                            ),
+                          ]
+                            .sort()
+                            .map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                        </select>
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder={t.searchList}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full py-3 pl-10 pr-10 border border-slate-200 bg-slate-50 focus:bg-white rounded-xl text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-sm"
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-200 rounded-full transition-all"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  {userCollection.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                      <FilterChip
+                        label="All Groups"
+                        active={listFilter === "All"}
+                        onClick={() => setListFilter("All")}
+                      />
+                      {Object.entries(GLOBAL_SPECIES_ESTIMATES).map(
+                        ([key, data]) => {
+                          const count = userCollection.filter(
+                            (obs) =>
+                              obs.iconicGroup === data.label ||
+                              obs.iconicGroup === key
+                          ).length;
+                          if (count === 0) return null;
+                          return (
+                            <FilterChip
+                              key={key}
+                              label={data.label}
+                              active={listFilter === data.label}
+                              onClick={() => setListFilter(data.label)}
+                              color={data.color}
+                              count={count}
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                  )}
+                </div>
+                {(() => {
+                  const observationsForGroup =
+                    listFilter === "All"
+                      ? userCollection
+                      : userCollection.filter(
+                          (obs) => obs.iconicGroup === listFilter
+                        );
+                  const observationsForCountry =
+                    countryFilter === "All"
+                      ? observationsForGroup
+                      : observationsForGroup.filter((obs) =>
+                          (obs.countries || []).includes(countryFilter)
+                        );
+                  const lowerCaseSearch = searchTerm.toLowerCase();
+                  const filteredObservations = observationsForCountry
+                    .filter((obs) => {
+                      if (!searchTerm) return true;
+                      return (
+                        (obs.commonName &&
+                          obs.commonName
+                            .toLowerCase()
+                            .includes(lowerCaseSearch)) ||
+                        (obs.scientificName &&
+                          obs.scientificName
+                            .toLowerCase()
+                            .includes(lowerCaseSearch)) ||
+                        (obs.family &&
+                          obs.family.toLowerCase().includes(lowerCaseSearch))
+                      );
+                    })
+                    .sort((a, b) =>
+                      (a.commonName || "").localeCompare(b.commonName || "")
+                    );
+                  return (
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/50">
+                      {filteredObservations.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 md:pb-0">
+                          {filteredObservations.map((obs) => (
+                            <CollectionItem
+                              key={obs.uuid}
+                              item={obs}
+                              onEdit={() => openEditModal(obs)}
+                              onRequestDelete={() => handleDeleteRequest(obs)}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-center mt-20 opacity-60">
+                          <div className="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center mb-6">
+                            <Search className="w-10 h-10 text-slate-400" />
+                          </div>
+                          <h3 className="font-bold text-slate-700 text-lg">
+                            {searchTerm ? t.noMatch : t.emptyList}
+                          </h3>
+                          <p className="text-sm text-slate-500 max-w-xs mt-2">
+                            {searchTerm
+                              ? "Try adjusting your search terms or filters."
+                              : `No observations found for ${
+                                  countryFilter !== "All"
+                                    ? countryFilter
+                                    : listFilter
+                                }.`}
+                          </p>
+                          {!searchTerm &&
+                            listFilter === "All" &&
+                            countryFilter === "All" && (
+                              <button
+                                onClick={() => setActiveTab("explore")}
+                                className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200"
+                              >
+                                {t.findSpecies}
+                              </button>
+                            )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {activeTab === "stats" && (
+              <div className="space-y-6 h-full flex flex-col max-w-6xl mx-auto">
+                <div className="flex p-1 bg-slate-200 rounded-xl mb-4 shrink-0 w-full md:max-w-md gap-1">
+                  <button
+                    onClick={() => {
+                      setStatsSubTab("breakdown");
+                      setSelectedGroupForDetails(null);
+                    }}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                      statsSubTab === "breakdown"
+                        ? "bg-white text-slate-800 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {t.breakdown}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setStatsSubTab("global");
+                      setSelectedGroupForDetails(null);
+                    }}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                      statsSubTab === "global"
+                        ? "bg-white text-emerald-800 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {t.globalContext}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setStatsSubTab("achievements");
+                      setSelectedGroupForDetails(null);
+                    }}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                      statsSubTab === "achievements"
+                        ? "bg-white text-yellow-700 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {t.trophies || "Trophies"}
+                  </button>
+                </div>
+                {statsSubTab === "breakdown" && (
+                  <div className="flex-1 relative min-h-[50vh]">
+                    {selectedGroupForDetails ? (
+                      <DrillDownView
+                        group={selectedGroupForDetails}
+                        data={userCollection.filter(
+                          (i) => i.iconicGroup === selectedGroupForDetails
+                        )}
+                        onBack={() => setSelectedGroupForDetails(null)}
+                      />
+                    ) : (
+                      <div className="space-y-8 animate-in fade-in">
+                        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                          <div className="flex items-center gap-6">
+                            <div className="p-4 bg-white/20 rounded-full backdrop-blur-sm">
+                              <PieChart className="w-10 h-10 text-white" />
+                            </div>
+                            <div>
+                              <div className="text-4xl font-bold">
+                                {stats.total}
+                              </div>
+                              <div className="text-emerald-100 font-medium">
+                                {t.observedSpecies}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2 text-lg">
+                            <Database className="w-5 h-5 text-blue-500" />{" "}
+                            {t.taxonomicGroups}
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {stats.groups.map(([group, count]) => (
+                              <GroupBox
+                                key={group}
+                                group={group}
+                                count={count}
+                                onClick={() =>
+                                  setSelectedGroupForDetails(group)
+                                }
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {statsSubTab === "global" && (
+                  <div className="relative min-h-[50vh]">
+                    {selectedGroupForDetails === "completed_genera" ? (
+                      <CompletedGeneraView
+                        completedList={stats.completedGeneraList}
+                      />
+                    ) : (
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in">
+                        <div className="lg:col-span-2 space-y-6">
+                          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <div className="flex items-center gap-3 mb-6">
+                              <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                                <Globe className="w-6 h-6" />
+                              </div>
+                              <div>
+                                <h3 className="font-bold text-slate-800 text-lg">
+                                  {t.globalCompletion}
+                                </h3>
+                                <p className="text-xs text-slate-500">
+                                  {t.globalSubtitle}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                              {stats.globalComparison.map((data) => (
+                                <StatBar
+                                  key={data.key}
+                                  label={data.label}
+                                  count={data.userCount}
+                                  total={data.total}
+                                  colorClass={data.color}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          <div
+                            onClick={() =>
+                              setSelectedGroupForDetails("completed_genera")
+                            }
+                            className="cursor-pointer transition-transform active:scale-95"
+                          >
+                            <GlobalStatCard
+                              label={t.completedGenera}
+                              value={stats.completedGeneraCount}
+                              subtext="Click to see list"
+                              icon={Trophy}
+                              color="bg-yellow-100"
+                              textColor="text-yellow-600"
+                            />
+                          </div>
+                          <GlobalStatCard
+                            label={t.iconicGroups}
+                            value={stats.groups.length}
+                            icon={Database}
+                            color="bg-orange-100"
+                            textColor="text-orange-600"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {selectedGroupForDetails === "completed_genera" && (
+                      <button
+                        onClick={() => setSelectedGroupForDetails(null)}
+                        className="absolute top-0 right-0 p-2 bg-slate-100 hover:bg-slate-200 rounded-full z-10"
+                      >
+                        <X className="w-5 h-5 text-slate-600" />
+                      </button>
+                    )}
+                  </div>
+                )}
+                {statsSubTab === "achievements" && (
+                  <AchievementsView collection={userCollection} />
+                )}
+              </div>
+            )}
+
+            {activeTab === "settings" && (
+              <div className="max-w-2xl mx-auto space-y-6">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
+                  <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <Languages className="w-5 h-5 text-purple-500" />{" "}
+                    {t.language}
+                  </h2>
+                  <div className="relative">
+                    <select
+                      value={locale}
+                      onChange={(e) => setLocale(e.target.value)}
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl appearance-none outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                    >
+                      {INAT_LANGUAGES.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">
+                    {t.langSubtitle}
+                  </p>
+                  {isTranslating && (
+                    <div className="absolute top-4 right-4 flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg animate-pulse">
+                      <Loader className="w-3 h-3 animate-spin" />{" "}
+                      {t.translating}
+                    </div>
+                  )}
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                  <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <Save className="w-5 h-5 text-blue-500" /> {t.dataBackup}
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button
+                      onClick={handleExport}
+                      disabled={userCollection.length === 0}
+                      className="flex items-center justify-center gap-3 bg-blue-50 text-blue-700 p-4 rounded-xl font-bold hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Download className="w-5 h-5" /> {t.exportCSV}
+                    </button>
+                    <label className="flex items-center justify-center gap-3 bg-white border-2 border-slate-100 text-slate-600 p-4 rounded-xl font-bold hover:bg-slate-50 hover:border-slate-200 cursor-pointer transition-all">
+                      <Upload className="w-5 h-5" /> {t.importCSV}
+                      <input
+                        type="file"
+                        accept=".csv"
+                        className="hidden"
+                        onChange={handleImport}
+                      />
+                    </label>
+                  </div>
+                  {importStatus === "success" && (
+                    <div className="mt-4 p-3 bg-green-50 text-green-700 text-xs font-bold rounded-lg text-center">
+                      Import Successful!
+                    </div>
+                  )}
+                  {importStatus === "error" && (
+                    <div className="mt-4 p-3 bg-red-50 text-red-700 text-xs font-bold rounded-lg text-center">
+                      Import Failed.
+                    </div>
+                  )}
+                </div>
+                <div className="bg-red-50 p-6 rounded-xl border border-red-100">
+                  <h2 className="font-bold text-red-800 mb-2 text-sm uppercase tracking-wide">
+                    {t.dangerZone}
+                  </h2>
+                  <button
+                    onClick={openClearAllModal}
+                    className="text-red-600 text-sm font-medium hover:underline flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" /> {t.clearAll}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* MOBILE NAV */}
+        <nav className="md:hidden bg-white border-t border-slate-200 flex justify-around p-2 pb-6 shrink-0 z-20">
+          <button
+            onClick={() => setActiveTab("explore")}
+            className={`flex flex-col items-center p-2 rounded-xl w-20 transition-all ${
+              activeTab === "explore"
+                ? "text-emerald-600 bg-emerald-50"
+                : "text-slate-400"
+            }`}
+          >
+            <Search className="w-6 h-6 mb-1" />
+            {t.explore}
+          </button>
+          <button
+            onClick={() => setActiveTab("collection")}
+            className={`relative flex flex-col items-center p-2 rounded-xl w-20 transition-all ${
+              activeTab === "collection"
+                ? "text-emerald-600 bg-emerald-50"
+                : "text-slate-400"
+            }`}
+          >
+            <List className="w-6 h-6 mb-1" />
+            {t.myList}
+            {userCollection.length > 0 && (
+              <span className="absolute top-2 right-5 w-2 h-2 bg-red-500 rounded-full"></span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("stats")}
+            className={`flex flex-col items-center p-2 rounded-xl w-20 transition-all ${
+              activeTab === "stats"
+                ? "text-emerald-600 bg-emerald-50"
+                : "text-slate-400"
+            }`}
+          >
+            <PieChart className="w-6 h-6 mb-1" />
+            {t.stats}
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`flex flex-col items-center p-2 rounded-xl w-20 transition-all ${
+              activeTab === "settings"
+                ? "text-emerald-600 bg-emerald-50"
+                : "text-slate-400"
+            }`}
+          >
+            <Settings className="w-6 h-6 mb-1" />
+            {t.settings}
+          </button>
+        </nav>
+      </div>
+
+      <Modal
+        isOpen={!!selectedTaxon}
+        onClose={() => setSelectedTaxon(null)}
+        title={modalMode === "add" ? t.addCollection : t.updateObs}
+        isLoading={isLoadingDetails}
+        loadingText={t.fetchingTaxonomy}
+      >
+        <div className="space-y-4">
+          <div className="flex items-center gap-4 p-2 bg-slate-50 rounded-xl">
+            {selectedTaxon?.image && (
+              <img
+                src={selectedTaxon.image}
+                className="w-16 h-16 rounded-lg object-cover shadow-sm border border-white"
+                alt="Species"
+              />
+            )}
+            <div>
+              <h3 className="font-bold text-slate-800 text-lg leading-tight">
+                {formatCommonName(
+                  selectedTaxon?.common_name || selectedTaxon?.commonName
+                )}
+              </h3>
+              <p className="text-sm text-slate-500 italic">
+                {selectedTaxon?.scientific_name ||
+                  selectedTaxon?.scientificName}
+              </p>
+            </div>
+          </div>
+          <div className="relative">
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">
+              {t.where}
+            </label>
+            <div className="flex gap-2 mb-2 relative">
+              <input
+                type="text"
+                value={countryInput}
+                onChange={(e) => setCountryInput(e.target.value)}
+                placeholder="e.g. France"
+                className="flex-1 p-2 border border-slate-200 rounded-lg text-sm focus:border-indigo-500 outline-none"
+              />
+              <button
+                onClick={() => addCountry()}
+                className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                disabled={!countryInput}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            {countrySuggestions.length > 0 && (
+              <ul className="absolute z-50 left-0 right-12 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1 top-full">
+                {countrySuggestions.map((country) => (
+                  <li
+                    key={country}
+                    onClick={() => addCountry(country)}
+                    className="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm text-slate-700 border-b border-slate-50 last:border-0"
+                  >
+                    {country}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="flex flex-wrap gap-2 min-h-[32px]">
+              {observationCountries.map((c) => (
+                <CountryTag key={c} name={c} onRemove={removeCountry} />
+              ))}
+              {observationCountries.length === 0 && (
+                <span className="text-xs text-slate-300 italic">
+                  {t.noCountry}
+                </span>
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">
+              {t.notes}
+            </label>
+            <textarea
+              value={observationNote}
+              onChange={(e) => setObservationNote(e.target.value)}
+              placeholder="e.g. Found in the backyard, 3pm..."
+              className="w-full p-4 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm min-h-[100px] resize-none transition-colors"
+            />
+          </div>
+          <button
+            onClick={saveObservation}
+            className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold shadow-lg transition-transform active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <Save className="w-5 h-5" />{" "}
+            {modalMode === "add" ? t.save : t.update}
+          </button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        title={t.removeTitle}
+      >
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto">
+            <Trash2 className="w-8 h-8" />
+          </div>
+          <p className="text-slate-600">
+            {t.removeMsg}{" "}
+            <strong>{formatCommonName(itemToDelete?.commonName)}</strong>?
+          </p>
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <button
+              onClick={() => setItemToDelete(null)}
+              className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors"
+            >
+              {t.cancel}
+            </button>
+            <button
+              onClick={executeDelete}
+              className="py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-red-200"
+            >
+              {t.yesRemove}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isClearingAll}
+        onClose={() => setIsClearingAll(false)}
+        title={t.resetTitle}
+      >
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto border-4 border-red-50">
+            <Lock className="w-8 h-8" />
+          </div>
+          <div>
+            <p className="text-slate-800 font-bold text-lg">
+              {t.protectedAction}
+            </p>
+            <p className="text-slate-500 text-sm mt-2">
+              {t.resetMsg} <strong>{userCollection.length}</strong>{" "}
+              {t.observations}, {t.typeDelete} below.
+            </p>
+          </div>
+          <input
+            type="text"
+            value={deleteCodeInput}
+            onChange={(e) => setDeleteCodeInput(e.target.value)}
+            placeholder={t.typeDelete}
+            className="w-full p-3 border-2 border-slate-200 rounded-xl text-center font-bold tracking-widest uppercase focus:border-red-500 outline-none"
+          />
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <button
+              onClick={() => setIsClearingAll(false)}
+              className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors"
+            >
+              {t.cancel}
+            </button>
+            <button
+              onClick={executeClearAll}
+              disabled={deleteCodeInput !== DELETE_CONFIRMATION_CODE}
+              className="py-3 bg-red-600 hover:bg-red-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-colors shadow-lg shadow-red-200"
+            >
+              {t.deleteEverything}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+}
